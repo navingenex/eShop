@@ -37,6 +37,8 @@ async function authenticate(user,plainPassword,callback) {
     User.findOne({ email: user.email }, (err, data) => {
         if (err)
             callback(err)
+        else if (!data)
+            callback(null,null)
         else {
             if (bcrypt.compareSync(plainPassword, data.password)) {
                 const token = jwt.sign({ id: data._id }, CONSTANT.SECRET, { expiresIn: '1d' });
@@ -65,4 +67,4 @@ async function getUser(callback) {
     });
 }
 
-module.exports = { getUser,create };
+module.exports = { getUser,create,authenticate,update };

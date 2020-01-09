@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const userController = require('./userController');
-
+const authController = require('../auth/authController');
 router.post('/user', (req, res) => {
     userController.create({
         userName: 'navingenex',
@@ -21,7 +21,7 @@ router.post('/user', (req, res) => {
 });
 
 
-router.get('/user', (req, res) => {
+router.get('/user', authController.authenticate,(req, res) => {
     userController.getUser((err, data) => {
         if (err)
             res.send('no data');
