@@ -1,5 +1,8 @@
 const Auth = require('./auth');
 const Error = require('http-errors');
+const jwt = require("jsonwebtoken");
+
+const CONSTANT = require('../../constants');
 const userController = require('../users/userController');
 
 
@@ -47,9 +50,30 @@ module.exports = {
                 if (!data)
                     next({ message: new Error('Not authorised') });
                 else {
-                    return next();
+                    
+                    try {
+                        module.exports.verifyToken(data.accessToken, CONSTANT.SECRET, (error, verified) => {
+                            if (error)
+                                throw error
+                            else
+                                next(null,verified)
+                        })
+                    } catch (error) {
+                        next(error)
+                    }
                 }                    
             })
+    },
+    //verifing token 
+    verifyToken: function verifyToken(token,secret,callback){
+        if (token) {
+            jwt.verify(token, secret, (err, data) => {
+                if (err)
+                    callback(new Error({ message: 'token expired' }));
+                else
+                    callback(null,data)
+            })
+        }
     }
     
 

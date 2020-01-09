@@ -41,7 +41,7 @@ async function authenticate(user,plainPassword,callback) {
             callback(null,null)
         else {
             if (bcrypt.compareSync(plainPassword, data.password)) {
-                const token = jwt.sign({ id: data._id }, CONSTANT.SECRET, { expiresIn: '1d' });
+                const token = jwt.sign({ id: data._id }, CONSTANT.SECRET, { expiresIn: '30d' });
                 callback(null,token)
             }
         }
