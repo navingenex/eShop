@@ -32,6 +32,10 @@ const User = new Schema({
         required: false,
         default:null
     },
+    image: {
+        data: Buffer,
+        contentType:String
+    },
     accessToken: {
         type: String,
         required: false,

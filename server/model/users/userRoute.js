@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 
 const userController = require('./userController');
 const authController = require('../auth/authController');
@@ -28,6 +29,25 @@ router.get('/user', authController.authenticate,(req, res) => {
         else
             res.send(data);
     })
+    
+});
+
+router.post('/user/imageUpload/:_id', authController.authenticate, (req, res) => {
+    // userController.getUserById(req.params._id, (err, data) => {
+    //     if (err)
+    //         res.send(err);
+    //     else {
+            userController.uploadImage({
+                imagePath: path.join(__dirname + '/qq.png'),
+                user:req.params._id
+            },(err, data) => {
+                if (err)
+                    res.send(err);
+                else
+                    res.send('uploaded');
+            })
+    //     }
+    // });
     
 });
 
