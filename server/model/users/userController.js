@@ -28,11 +28,11 @@ module.exports = {
                                 if (err)
                                     callback(err)
                                 else {
-                                    module.exports.update(user.email, res, (err, response) => {
+                                    module.exports.update(user.id, res, (err, response) => {
                                         if (err)
                                             callback(err)
                                         else
-                                            callback(response)
+                                            callback(null,response)
                                     });
                                 }
                             });
@@ -56,14 +56,17 @@ module.exports = {
                 if (bcrypt.compareSync(plainPassword, data.password)) {
                     const token = jwt.sign({ id: data._id }, CONSTANT.SECRET, { expiresIn: '30d' });
                     callback(null, token)
+                } else {
+                    const err=new Error('Password is wrong')
+                    callback(err)
                 }
             }
         })
     },
 
-    update: async function update(email, token, callback) {
-        if (email) {
-            User.findOneAndUpdate({ email: email }, { $set: { accessToken: token } }, (err, data) => {
+    update: async function update(_id, token, callback) {
+        if (_id) {
+            User.findOneAndUpdate({ _id: _id }, { accessToken: token },{} , (err, data) => {
                 if (err)
                     callback(err);
                 else

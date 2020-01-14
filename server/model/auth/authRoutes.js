@@ -7,7 +7,10 @@ const authController = require('./authController');
 //login
 router.post('/login', (req, res) => {
     authController.signingIn(req.body, (err, data) => {
-        res.send(data);
+        if (err)
+            res.status(400).send(err.message);
+        else
+            res.send(data);
     })
 });
 

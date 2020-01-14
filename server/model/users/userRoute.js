@@ -5,12 +5,7 @@ const path = require('path');
 const userController = require('./userController');
 const authController = require('../auth/authController');
 router.post('/user', (req, res) => {
-    userController.create({
-        userName: 'navingenex',
-        email: 'navin.kiit.nk@gmail.com',
-        name: 'Navin kumar',
-        password:'tapjam'
-    }, (err, data) => {
+    userController.create(req.body, (err, data) => {
         if (err) {
             res.status(400);
             res.send(err);
