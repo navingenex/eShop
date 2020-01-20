@@ -4,6 +4,7 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 
+const Error = require('http-errors');
 
 const cors = require('cors');
 const indexRouter = require("./model/index");
@@ -18,7 +19,8 @@ app.use(express.static(path.resolve(__dirname, "build")));
 
 app.use("/api", indexRouter);
 app.get("*", (req, res) => {
-  res.send('ok');
+  res.status(404);
+  res.send({message:new Error('Url not available')});
 });
 
 // catch 404 and forward to error handler

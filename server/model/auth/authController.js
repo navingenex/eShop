@@ -2,6 +2,7 @@ const Auth = require('./auth');
 const Error = require('http-errors');
 const jwt = require("jsonwebtoken");
 
+const User = require('../users/user');
 const CONSTANT = require('../../constants');
 const userController = require('../users/userController');
 
@@ -19,7 +20,9 @@ module.exports = {
                     email: payload.email,
                     accessToken: token
                 });
-                auth.save().then(() => callback(null,auth)).catch(err => callback(err));
+                auth.save().then(() => {                    
+                    callback(null, auth)
+                }).catch(err => callback(err));
             }
                 
         })
@@ -45,34 +48,29 @@ module.exports = {
     },
     //authenticate the requested call
     authenticate: async function authenticate(req, res,next) {
-        if (req)
-             Auth.findOne({ accessToken: req.headers.authorization}, (err, data) => {
-                if (!data)
+        if (req.headers.authorization) {
+            module.exports.verifyToken(req, (err, isVerified) => {
+                if (err)
                     next({ message: new Error('Not authorised') });
                 else {
-                    
-                    try {
-                        module.exports.verifyToken(data.accessToken, CONSTANT.SECRET, (error, verified) => {
-                            if (error)
-                                throw error
-                            else
-                                next(null,verified)
-                        })
-                    } catch (error) {
-                        next(error)
-                    }
-                }                    
+                    next(null, isVerified)
+                }
             })
+            
+        } else
+            next({message:new Error('Access denide. token unavailable')})
+             
     },
     //verifing token 
-    verifyToken: function verifyToken(token,secret,callback){
-        if (token) {
-            jwt.verify(token, secret, (err, data) => {
-                if (err)
-                    callback(new Error({ message: 'token expired' }));
-                else
-                    callback(null,data)
-            })
+    verifyToken:async function verifyToken(req,callback){
+        const decoded = jwt.verify(req.headers.authorization, CONSTANT.SECRET);
+        try {
+            const user = await Auth.findOne({ accessToken: req.headers.authorization });
+            if (!user)
+                throw new Error({message:"not authorised"});
+            callback(null,true)
+        } catch (error) {
+            callback(error)
         }
     }
     

@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const bcrypt = require("bcrypt");
 
+const CONSTANT = require('../../constants');
+const jwt = require("jsonwebtoken");
+
 const saltRounds = 10;
 /**
  * defining user schema
@@ -52,16 +55,23 @@ const User = new Schema({
         required: false,
         default:false
     },
-    userType: {
-        type: Boolean,
+    role: {
+        type: String,
         required: false,
         default:null
     }
 });
 
 User.pre('save', function (next) {
+    const tempPassword = this.password;
     this.password = bcrypt.hashSync(this.password, saltRounds);
-    next();
+    if (bcrypt.compareSync(tempPassword, this.password)) {
+        const token = jwt.sign({ id: this.id,role:this.role }, CONSTANT.SECRET, { expiresIn: '30d' });
+        this.accessToken = token;
+        next(null,token);
+    } else
+        next(null)
+    next(null, token);
 });
 
 module.exports = mongoose.model('users', User);

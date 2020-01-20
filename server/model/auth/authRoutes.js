@@ -16,7 +16,7 @@ router.post('/login', (req, res) => {
 
 
 //logout
-router.put('/logout', (req, res) => {
+router.put('/logout',authController.authenticate, (req, res) => {
     authController.logout(req.headers.authorization, (err, data) => {
         if (err)
             res.status(400).send(err);

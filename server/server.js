@@ -40,8 +40,9 @@ const server = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
+var io = require('socket.io').listen(server.listen(port));
+app.set('socketio', io);
 
-server.listen(port);
 server.on("error", onError);
 server.on("listening", onListening);
 
