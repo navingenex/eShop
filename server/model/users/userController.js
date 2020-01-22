@@ -1,7 +1,10 @@
-const User = require('./user')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
+//local modules
+const User = require('./user')
 const CONSTANT = require('../../constants');
+const databaseFunctions = require("../../shared/dabaseFunctions");
 
 const fs = require('fs');
 
@@ -24,24 +27,13 @@ module.exports = {
                         if (err)
                             callback(err);
                         else {
-                            module.exports.authenticate(user, userData.password, (err, res) => {
-                                if (err)
-                                    callback(err)
-                                else {
-                                    module.exports.update(user.id, res, (err, response) => {
-                                        if (err)
-                                            callback(err)
-                                        else
-                                            callback(null,response)
-                                    });
-                                }
-                            });
+                            callback(null, data)
                         }
 
                     });
-                }                    
+                }
             })
-            
+
         }
     },
 
@@ -51,14 +43,26 @@ module.exports = {
             if (err)
                 callback(err)
             else if (!data)
-                callback(null, null)
+                callback({
+                    error: [
+                        { message: 'No user found by this email' }
+                    ], success: false
+                });
             else {
                 if (bcrypt.compareSync(plainPassword, data.password)) {
                     const token = jwt.sign({ id: data._id }, CONSTANT.SECRET, { expiresIn: '30d' });
-                    callback(null, token)
+                    databaseFunctions.updateOne(User, { _id: data.id }, { accessToken: token }, { new: true }, (error, userData) => {
+                        if (error)
+                            callback(error)
+                        else
+                            callback(null, userData)
+                    });
                 } else {
-                    const err=new Error('Password is wrong')
-                    callback(err)
+                    callback({
+                        error: [
+                            { message: 'Wrong password' }
+                        ], success: false
+                    });
                 }
             }
         })
@@ -66,7 +70,7 @@ module.exports = {
 
     update: async function update(_id, token, callback) {
         if (_id) {
-            User.findOneAndUpdate({ _id: _id }, { accessToken: token },{} , (err, data) => {
+            User.findOneAndUpdate({ _id: _id }, { accessToken: token }, {}, (err, data) => {
                 if (err)
                     callback(err);
                 else
@@ -93,8 +97,6 @@ module.exports = {
         } else {
             callback('Please send userId');
         }
-            
-        
     },
     uploadImage: async function uploadImage(payload, callback) {
         if (payload) {
@@ -102,7 +104,7 @@ module.exports = {
             var imageD = {}
             imageD.data = fs.readFileSync(payload.imagePath);
             imageD.contentType = "image/png";
-            User.findOneAndUpdate({_id:user},{image:imageD},{},(err, data) => {
+            User.findOneAndUpdate({ _id: user }, { image: imageD }, {}, (err, data) => {
                 if (err)
                     callback(err)
                 else

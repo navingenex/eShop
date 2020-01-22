@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt");
 const CONSTANT = require('../../constants');
 const jwt = require("jsonwebtoken");
 
-const saltRounds = 10;
+
 /**
  * defining user schema
  */
@@ -13,62 +13,67 @@ const User = new Schema({
     name: {
         type: String,
         required: true,
-        trim:true
+        trim: true
     },
     email: {
         type: String,
         required: true,
-        trim:true
+        trim: true
     },
     userName: {
         type: String,
         required: true,
-        trim:true
+        trim: true
     },
     password: {
         type: String,
         required: true,
-        trim:true
+        trim: true
     },
     profilePicture: {
         type: String,
         required: false,
-        default:null
+        default: null
     },
     image: {
         data: Buffer,
-        contentType:String
+        contentType: String
     },
     accessToken: {
         type: String,
         required: false,
-        default:null,
-        trim:true
+        default: null,
+        trim: true
+    },
+    passwordResetToken: {
+        type: String,
+        required: false,
+        trim: true
     },
     phoneVerified: {
         type: Boolean,
         required: true,
-        default:false
+        default: false
     },
     emailVerified: {
         type: Boolean,
         required: false,
-        default:false
+        default: false
     },
     role: {
         type: String,
         required: false,
-        default:null
+        default: null
     }
 });
 
 User.pre('save', function (next) {
     const tempPassword = this.password;
-    this.password = bcrypt.hashSync(this.password, saltRounds);
+    this.password = bcrypt.hashSync(this.password, CONSTANT.saltRounds);
     if (bcrypt.compareSync(tempPassword, this.password)) {
-        const token = jwt.sign({ id: this.id,role:this.role }, CONSTANT.SECRET, { expiresIn: '30d' });
+        const token = jwt.sign({ id: this.id, role: this.role }, CONSTANT.SECRET, { expiresIn: '30d' });
         this.accessToken = token;
-        next(null,token);
+        next(null, token);
     } else
         next(null)
     next(null, token);

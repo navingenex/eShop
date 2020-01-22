@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 
+const CONSTANT = require('../../constants');
+
+
+
+
+
 // const io = require('../../server').io;
 const userController = require('./userController');
 const authController = require('../auth/authController');
@@ -18,9 +24,6 @@ router.post('/user', (req, res) => {
 
     })
 });
-
-
-
 
 router.get('/user', authController.authenticate, (req, res) => {
     userController.getUser((err, data) => {
@@ -48,7 +51,17 @@ router.post('/user/imageUpload/:_id', authController.authenticate, (req, res) =>
     })
     //     }
     // });
+});
 
+router.post('/user/forgotPassword', (req, res) => {
+    userController.forgotPassword(req.body, (err, data) => {
+        if (err)
+            res.send(err);
+        else if (!data)
+            res.send({ message: new Error('You are not registered with us.') });
+        else
+            res.send(data);
+    })
 });
 
 module.exports = router;
