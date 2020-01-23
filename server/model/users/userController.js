@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require('./user')
 const CONSTANT = require('../../constants');
 const databaseFunctions = require("../../shared/dabaseFunctions");
-
+const universalFunctions = require("../../shared/universalFunctions");
 const fs = require('fs');
 
 module.exports = {
@@ -27,7 +27,24 @@ module.exports = {
                         if (err)
                             callback(err);
                         else {
-                            callback(null, data)
+                            var msg = {
+                                to: data.email,
+                                from: CONSTANT.FORGOTPASSWORDMAILID,
+                                subject: 'Verify email',
+                                text: 'Verify email ',
+                                html: `
+                                    <div>
+                                        <a href="http://localhost:4200/verify-userEmail/${data.id}">Click here to verify your email</a>
+                                    </div>
+                                `
+                            };
+                            universalFunctions.sendMail(msg, (err, response) => {
+                                if (err)
+                                    console.log(err);
+                                else
+                                    callback(null, data)
+                            })
+
                         }
 
                     });
@@ -111,6 +128,24 @@ module.exports = {
                     callback(null, data);
             })
         }
+    },
+    verifyEmail: function verifyEmail(payload, callback) {
+        databaseFunctions.find(User, payload, {}, {}, (err, data) => {
+            if (err)
+                callback(err);
+            else if (!data)
+                callback({ data: [], success: false });
+            else if (data[0].emailVerified)
+                callback(null, data)
+            else {
+                databaseFunctions.updateOne(User, { _id: data[0].id }, { emailVerified: true }, { new: true }, (err, response) => {
+                    if (err)
+                        callback(err);
+                    else
+                        callback(null, response)
+                })
+            }
+        });
     }
 }
 

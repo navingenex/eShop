@@ -52,15 +52,13 @@ router.post('/user/imageUpload/:_id', authController.authenticate, (req, res) =>
     //     }
     // });
 });
-
-router.post('/user/forgotPassword', (req, res) => {
-    userController.forgotPassword(req.body, (err, data) => {
+//verify user through email
+router.put('/user/verifyEmail', (req, res) => {
+    userController.verifyEmail(req.body, (err, response) => {
         if (err)
             res.send(err);
-        else if (!data)
-            res.send({ message: new Error('You are not registered with us.') });
         else
-            res.send(data);
+            res.send(response);
     })
 });
 
