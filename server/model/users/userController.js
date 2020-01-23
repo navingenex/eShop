@@ -15,7 +15,8 @@ module.exports = {
                 userName: userData.userName,
                 email: userData.email,
                 password: userData.password,
-                name: userData.name
+                name: userData.name,
+                role: userData.role
             });
             User.findOne({ email: userData.email }, (err, record) => {
                 if (err)
@@ -67,7 +68,7 @@ module.exports = {
                 });
             else {
                 if (bcrypt.compareSync(plainPassword, data.password)) {
-                    const token = jwt.sign({ id: data._id }, CONSTANT.SECRET, { expiresIn: '30d' });
+                    const token = jwt.sign({ id: data._id, role: data.role }, CONSTANT.SECRET, { expiresIn: '30d' });
                     databaseFunctions.updateOne(User, { _id: data.id }, { accessToken: token }, { new: true }, (error, userData) => {
                         if (error)
                             callback(error)

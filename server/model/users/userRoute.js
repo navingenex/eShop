@@ -25,7 +25,7 @@ router.post('/user', (req, res) => {
     })
 });
 
-router.get('/user', authController.authenticate, (req, res) => {
+router.get('/users', authController.authenticate, (req, res) => {
     userController.getUser((err, data) => {
         if (err)
             res.send('no data');

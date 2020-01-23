@@ -7,7 +7,7 @@ const CONSTANT = require('../../constants');
 const userController = require('../users/userController');
 const databaseFunctions = require('../../shared/dabaseFunctions');
 const universalFunctions = require('../../shared/universalFunctions');
-
+const roles = require('../auth/roles');
 const authService = require('./auth.service');
 module.exports = {
     signingIn: async function signingIn(payload, callback) {
@@ -47,11 +47,11 @@ module.exports = {
         if (req.headers.authorization) {
             module.exports.verifyToken(req, (err, isVerified) => {
                 if (err)
-                    next({ message: new Error('Not authorised') });
+                    next({ message: err });
                 else {
                     databaseFunctions.find(User, { accessToken: req.headers.authorization }, {}, {}, (error, response) => {
                         if (error)
-                            next({ message: new Error('Access denide. token unavailable') });
+                            next({ message: new Error('Access denide. login to get access') });
                         else
                             next(null, response);
                     })
@@ -59,7 +59,7 @@ module.exports = {
             })
 
         } else
-            next({ message: new Error('Access denide. token unavailable') })
+            next({ message: new Error('Access denide. login to get access') })
 
     },
     //verifing token 
@@ -67,13 +67,16 @@ module.exports = {
         jwt.verify(req.headers.authorization, CONSTANT.SECRET, (err, decoded) => {
             if (err)
                 callback(err);
-            else {
+            else if (roles[decoded.role].find(function (url) {
+                return url == req.url
+            })) {
                 const user = User.findOne({ accessToken: req.headers.authorization });
                 if (!user)
-                    callback('Internal server error')
+                    callback(new Error('Access denied!'))
                 else
                     callback(null, user)
-            }
+            } else
+                callback(new Error('Access denied!'))
 
         });
     },
